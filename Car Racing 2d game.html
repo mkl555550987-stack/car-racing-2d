@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Car Racing Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 800px;
+            background: #2c3e50;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* Login Screen */
+        #loginScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .game-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            margin-bottom: 50px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+            50% { text-shadow: 0 0 40px rgba(255,255,255,0.8); }
+        }
+
+        .menu-btn {
+            width: 250px;
+            padding: 15px;
+            margin: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        /* Settings Screen */
+        #settingsScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .settings-title {
+            font-size: 36px;
+            color: #fff;
+            margin-bottom: 40px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            margin: 15px;
+            color: #fff;
+            font-size: 20px;
+        }
+
+        .setting-item label {
+            margin-right: 20px;
+            min-width: 150px;
+        }
+
+        .toggle-btn {
+            width: 80px;
+            height: 40px;
+            background: #ccc;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: #4CAF50;
+        }
+
+        .toggle-btn::after {
+            content: '';
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            top: 4px;
+            left: 4px;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active::after {
+            left: 44px;
+        }
+
+        select {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        /* Game Screen */
+        #gameScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            background: #2c3e50;
+        }
+
+        /* HUD - Top Left */
+        .hud {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 100;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .collections-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .collection-item {
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .coin-icon {
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(241, 196, 15, 0.5);
+        }
+
+        .reward-icon {
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+        }
+
+        .collection-count {
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .lives {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .life {
+            width: 30px;
+            height: 30px;
+            background: #e74c3c;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 30px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #fff;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Controls Hint */
+        .controls-hint {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Game Over Screen */
+        #gameOverScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 998;
+        }
+
+        .game-over-title {
+            font-size: 60px;
+            color: #e74c3c;
+            margin-bottom: 30px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .final-score {
+            font-size: 30px;
+            color: #fff;
+            margin-bottom: 40px;
+        }
+
+        /* Level Complete Screen */
+        #levelCompleteScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 997;
+        }
+
+        .level-complete-title {
+            font-size: 50px;
+            color: #2ecc71;
+            margin-bottom: 30px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .game-title { font-size: 32px; }
+            .menu-btn { width: 200px; font-size: 16px; }
+            .settings-title { font-size: 28px; }
+            .game-over-title { font-size: 40px; }
+            .level-complete-title { font-size: 36px; }
+            .level-badge { font-size: 20px; padding: 10px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <div class="game-title">🏎️ CAR RACING 🏎️</div>
+            <button class="menu-btn" onclick="startGame()">START GAME</button>
+            <button class="menu-btn" onclick="newGame()">NEW GAME</button>
+            <button class="menu-btn" onclick="showSettings()">SETTINGS</button>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="settingsScreen">
+            <div class="settings-title">⚙️ SETTINGS</div>
+            <div class="setting-item">
+                <label>Music:</label>
+                <div class="toggle-btn active" id="musicToggle" onclick="toggleMusic()"></div>
+            </div>
+            <div class="setting-item">
+                <label>Sound Effects:</label>
+                <div class="toggle-btn active" id="sfxToggle" onclick="toggleSFX()"></div>
+            </div>
+            <button class="menu-btn" onclick="backToMenu()">BACK</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen">
+            <canvas id="gameCanvas"></canvas>
+            
+            <!-- HUD -->
+            <div class="hud">
+                <div class="level-badge">LEVEL <span id="levelDisplay">1</span></div>
+                <div class="collections-container">
+                    <div class="collection-item">
+                        <div class="coin-icon">$</div>
+                        <div class="collection-count" id="coinCount">0</div>
+                    </div>
+                    <div class="collection-item">
+                        <div class="reward-icon">★</div>
+                        <div class="collection-count" id="rewardCount">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lives" id="livesDisplay"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;">
+                    <span id="progressText">0%</span>
+                </div>
+            </div>
+            <div class="controls-hint">
+                ← → Move | ↑ Accelerate | ↓ Reverse
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen">
+            <div class="game-over-title">GAME OVER!</div>
+            <div class="final-score">Coins Collected: <span id="finalCoins">0</span></div>
+            <div class="final-score">Rewards Collected: <span id="finalRewards">0</span></div>
+            <div class="final-score">Level Reached: <span id="finalLevel">1</span></div>
+            <button class="menu-btn" onclick="restartGame()">RESTART</button>
+            <button class="menu-btn" onclick="backToMenuFromGame()">MAIN MENU</button>
+        </div>
+
+        <!-- Level Complete Screen -->
+        <div id="levelCompleteScreen">
+            <div class="level-complete-title">🎉 LEVEL COMPLETE! 🎉</div>
+            <div class="final-score">Coins: <span id="levelCoins">0</span></div>
+            <div class="final-score">Rewards: <span id="levelRewards">0</span></div>
+            <div class="final-score">Time: <span id="levelTime">0</span>s</div>
+            <button class="menu-btn" onclick="nextLevel()">NEXT LEVEL</button>
+        </div>
+    </div>
+
+    <script>
+        // Audio Context
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let musicEnabled = true;
+        let sfxEnabled = true;
+        let musicInterval = null;
+        let bassInterval = null;
+
+        // Game Variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let gameLoop;
+        let lastFrameTime = 0;
+        const targetFPS = 60;
+        const frameDelay = 1000 / targetFPS;
+
+        let gameState = {
+            level: 1,
+            lives: 3,
+            coinsCollected: 0,
+            rewardsCollected: 0,
+            baseSpeed: 4,
+            currentSpeed: 4,
+            distance: 0,
+            targetDistance: 5000,
+            isPlaying: false,
+            spawnTimer: 0,
+            coinTimer: 0,
+            rewardTimer: 0,
+            invincible: false,
+            invincibleTimer: 0,
+            startTime: 0
+        };
+
+        // Level Configuration with increasing speed
+        const levelConfig = {
+            1: { distance: 5000, enemySpeed: 0.6, spawnRate: 120, baseSpeed: 4 },
+            2: { distance: 7500, enemySpeed: 0.75, spawnRate: 90, baseSpeed: 5 },
+            3: { distance: 10000, enemySpeed: 0.9, spawnRate: 70, baseSpeed: 6 },
+            4: { distance: 12500, enemySpeed: 1.0, spawnRate: 60, baseSpeed: 7 },
+            5: { distance: 15000, enemySpeed: 1.1, spawnRate: 50, baseSpeed: 8 }
+        };
+
+        // Player Car
+        const player = {
+            x: 0,
+            y: 0,
+            width: 32,
+            height: 55,
+            moveSpeed: 7,
+            maxSpeed: 10,
+            minSpeed: 2,
+            acceleration: 0.3,
+            deceleration: 0.2,
+            currentLane: 1,
+            color: '#FF1744',
+            isMovingLeft: false,
+            isMovingRight: false,
+            isAccelerating: false,
+            isReversing: false
+        };
+
+        // Road
+        const road = {
+            width: 280,
+            lineOffset: 0,
+            x: 0
+        };
+
+        // Lanes
+        const lanes = {
+            positions: [],
+            width: 70
+        };
+
+        // Game Objects
+        let enemyCars = [];
+        let coins = [];
+        let rewards = [];
+
+        // Initialize game
+        function initGame() {
+            canvas.width = document.getElementById('gameContainer').offsetWidth;
+            canvas.height = document.getElementById('gameContainer').offsetHeight;
+            
+            road.x = canvas.width / 2 - road.width / 2;
+            
+            lanes.positions = [
+                road.x + 25,
+                road.x + road.width / 2 - player.width / 2,
+                road.x + road.width - player.width - 25
+            ];
+            
+            player.currentLane = 1;
+            player.x = lanes.positions[1];
+            player.y = canvas.height - player.height - 60;
+            player.isMovingLeft = false;
+            player.isMovingRight = false;
+            player.isAccelerating = false;
+            player.isReversing = false;
+            
+            enemyCars = [];
+            coins = [];
+            rewards = [];
+            
+            gameState.coinsCollected = 0;
+            gameState.rewardsCollected = 0;
+            gameState.distance = 0;
+            gameState.lives = 3;
+            
+            const config = levelConfig[gameState.level] || levelConfig[5];
+            gameState.baseSpeed = config.baseSpeed;
+            gameState.currentSpeed = config.baseSpeed;
+            gameState.targetDistance = config.distance;
+            player.maxSpeed = config.baseSpeed + 4;
+            
+            gameState.spawnTimer = 0;
+            gameState.coinTimer = 0;
+            gameState.rewardTimer = 0;
+            gameState.invincible = false;
+            gameState.startTime = Date.now();
+            
+            updateHUD();
+        }
+
+        // Racing Music
+        function playRacingMusic() {
+            if (!musicEnabled) return;
+            
+            stopMusic();
+            
+            const racingMelody = [
+                { freq: 523.25, duration: 200 },
+                { freq: 587.33, duration: 200 },
+                { freq: 659.25, duration: 200 },
+                { freq: 783.99, duration: 200 },
+                { freq: 880.00, duration: 200 },
+                { freq: 783.99, duration: 200 },
+                { freq: 659.25, duration: 200 },
+                { freq: 587.33, duration: 200 },
+            ];
+            
+            let melodyIndex = 0;
+            
+            musicInterval = setInterval(() => {
+                if (!musicEnabled) {
+                    clearInterval(musicInterval);
+                    return;
+                }
+                
+                const note = racingMelody[melodyIndex % racingMelody.length];
+                
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.frequency.value = note.freq;
+                oscillator.type = 'square';
+                
+                gainNode.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + note.duration / 1000);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + note.duration / 1000);
+                
+                melodyIndex++;
+            }, 250);
+            
+            const bassNotes = [130.81, 146.83, 164.81, 146.83];
+            let bassIndex = 0;
+            
+            bassInterval = setInterval(() => {
+                if (!musicEnabled) {
+                    clearInterval(bassInterval);
+                    return;
+                }
+                
+                const bass = audioCtx.createOscillator();
+                const bassGain = audioCtx.createGain();
+                
+                bass.connect(bassGain);
+                bassGain.connect(audioCtx.destination);
+                
+                bass.frequency.value = bassNotes[bassIndex % bassNotes.length];
+                bass.type = 'sawtooth';
+                
+                bassGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                bassGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                
+                bass.start(audioCtx.currentTime);
+                bass.stop(audioCtx.currentTime + 0.4);
+                
+                bassIndex++;
+            }, 500);
+        }
+
+        function stopMusic() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
+            }
+            if (bassInterval) {
+                clearInterval(bassInterval);
+                bassInterval = null;
+            }
+        }
+
+        function playSoundEffect(frequency, duration) {
+            if (!sfxEnabled) return;
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'square';
+            
+            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        // UI Functions
+        function startGame() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            gameState.isPlaying = true;
+            initGame();
+            playRacingMusic();
+            lastFrameTime = performance.now();
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function newGame() {
+            gameState.level = 1;
+            startGame();
+        }
+
+        function showSettings() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('settingsScreen').style.display = 'flex';
+        }
+
+        function backToMenu() {
+            document.getElementById('settingsScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+        }
+
+        function backToMenuFromGame() {
+            gameState.isPlaying = false;
+            cancelAnimationFrame(gameLoop);
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            stopMusic();
+        }
+
+        function toggleMusic() {
+            const toggle = document.getElementById('musicToggle');
+            toggle.classList.toggle('active');
+            musicEnabled = toggle.classList.contains('active');
+            
+            if (musicEnabled && gameState.isPlaying) {
+                playRacingMusic();
+            } else {
+                stopMusic();
+            }
+        }
+
+        function toggleSFX() {
+            const toggle = document.getElementById('sfxToggle');
+            toggle.classList.toggle('active');
+            sfxEnabled = toggle.classList.contains('active');
+        }
+
+        function restartGame() {
+            gameState.level = 1;
+            document.getElementById('gameOverScreen').style.display = 'none';
+            initGame();
+            gameState.isPlaying = true;
+            playRacingMusic();
+            lastFrameTime = performance.now();
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function nextLevel() {
+            gameState.level++;
+            document.getElementById('levelCompleteScreen').style.display = 'none';
+            initGame();
+            gameState.isPlaying = true;
+            lastFrameTime = performance.now();
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function updateHUD() {
+            document.getElementById('levelDisplay').textContent = gameState.level;
+            document.getElementById('coinCount').textContent = gameState.coinsCollected;
+            document.getElementById('rewardCount').textContent = gameState.rewardsCollected;
+            
+            const livesDisplay = document.getElementById('livesDisplay');
+            livesDisplay.innerHTML = '';
+            for (let i = 0; i < gameState.lives; i++) {
+                const life = document.createElement('div');
+                life.className = 'life';
+                livesDisplay.appendChild(life);
+            }
+            
+            const progress = (gameState.distance / gameState.targetDistance) * 100;
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressFill.style.width = Math.min(progress, 100) + '%';
+            progressText.textContent = Math.floor(Math.min(progress, 100)) + '%';
+        }
+
+        // Game Logic
+        function spawnEnemyCar() {
+            const config = levelConfig[gameState.level] || levelConfig[5];
+            
+            const availableLanes = [0, 1, 2].filter(laneIndex => {
+                if (laneIndex === 1) return false;
+                
+                for (let car of enemyCars) {
+                    if (Math.abs(car.x - lanes.positions[laneIndex]) < 10 && car.y < 200) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+            
+            if (availableLanes.length === 0) return;
+            
+            const laneIndex = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+            
+            enemyCars.push({
+                x: lanes.positions[laneIndex],
+                y: -100,
+                width: 38,
+                height: 75,
+                speed: gameState.baseSpeed * config.enemySpeed + Math.random() * 1.5,
+                color: ['#424242', '#616161', '#757575'][Math.floor(Math.random() * 3)],
+                lane: laneIndex
+            });
+        }
+
+        function spawnCoin() {
+            const availableLanes = [0, 1, 2].filter(laneIndex => {
+                for (let coin of coins) {
+                    if (Math.abs(coin.x - (lanes.positions[laneIndex] + 17)) < 30 && coin.y < 200) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+            
+            if (availableLanes.length === 0) return;
+            
+            const laneIndex = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+            
+            coins.push({
+                x: lanes.positions[laneIndex] + 17,
+                y: -50,
+                radius: 12,
+                speed: gameState.currentSpeed,
+                lane: laneIndex,
+                collected: false
+            });
+        }
+
+        function spawnReward() {
+            const availableLanes = [0, 1, 2].filter(laneIndex => {
+                for (let reward of rewards) {
+                    if (Math.abs(reward.x - lanes.positions[laneIndex]) < 30 && reward.y < 200) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+            
+            if (availableLanes.length === 0) return;
+            
+            const laneIndex = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+            const rewardTypes = ['star', 'heart', 'boost'];
+            const type = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
+            
+            rewards.push({
+                x: lanes.positions[laneIndex] + 17,
+                y: -50,
+                width: 25,
+                height: 25,
+                speed: gameState.currentSpeed,
+                type: type,
+                lane: laneIndex,
+                collected: false
+            });
+        }
+
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width - 5 &&
+                   rect1.x + rect1.width - 5 > rect2.x &&
+                   rect1.y < rect2.y + rect2.height - 5 &&
+                   rect1.y + rect1.height - 5 > rect2.y;
+        }
+
+        function checkCircleCollision(circle, rect) {
+            const distX = Math.abs(circle.x - rect.x - rect.width / 2);
+            const distY = Math.abs(circle.y - rect.y - rect.height / 2);
+
+            if (distX > (rect.width / 2 + circle.radius)) return false;
+            if (distY > (rect.height / 2 + circle.radius)) return false;
+
+            if (distX <= (rect.width / 2)) return true;
+            if (distY <= (rect.height / 2)) return true;
+
+            const dx = distX - rect.width / 2;
+            const dy = distY - rect.height / 2;
+            return (dx * dx + dy * dy <= (circle.radius * circle.radius));
+        }
+
+        function drawPlayerCar(car) {
+            if (gameState.invincible && Math.floor(Date.now() / 100) % 2 === 0) {
+                ctx.globalAlpha = 0.5;
+            }
+            
+            ctx.fillStyle = car.color;
+            ctx.beginPath();
+            ctx.moveTo(car.x + car.width / 2, car.y);
+            ctx.lineTo(car.x + car.width, car.y + 15);
+            ctx.lineTo(car.x + car.width, car.y + car.height - 5);
+            ctx.lineTo(car.x + car.width / 2, car.y + car.height);
+            ctx.lineTo(car.x, car.y + car.height - 5);
+            ctx.lineTo(car.x, car.y + 15);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(car.x + 5, car.y + 8, car.width - 10, 15);
+            
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(car.x + car.width / 2 - 2, car.y + 5, 4, car.height - 10);
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(car.x - 2, car.y + 20, 3, 6);
+            ctx.fillRect(car.x + car.width - 1, car.y + 20, 3, 6);
+            
+            ctx.fillStyle = '#FFEB3B';
+            ctx.beginPath();
+            ctx.arc(car.x + 8, car.y + car.height - 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(car.x + car.width - 8, car.y + car.height - 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(car.x + 3, car.y + 2, car.width - 6, 3);
+            
+            ctx.globalAlpha = 1;
+        }
+
+        function drawEnemyCar(car) {
+            ctx.fillStyle = car.color;
+            ctx.fillRect(car.x + 2, car.y, car.width - 4, car.height);
+            
+            ctx.fillStyle = '#2c2c2c';
+            ctx.fillRect(car.x + 6, car.y + 12, car.width - 12, car.height * 0.3);
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(car.x - 1, car.y + 15, 5, 14);
+            ctx.fillRect(car.x + car.width - 4, car.y + 15, 5, 14);
+            ctx.fillRect(car.x - 1, car.y + car.height - 29, 5, 14);
+            ctx.fillRect(car.x + car.width - 4, car.y + car.height - 29, 5, 14);
+            
+            ctx.fillStyle = '#F44336';
+            ctx.fillRect(car.x + 8, car.y + 2, 7, 3);
+            ctx.fillRect(car.x + car.width - 15, car.y + 2, 7, 3);
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(car.x + 5, car.y, car.width - 10, 4);
+        }
+
+        function drawRoad() {
+            ctx.fillStyle = '#27ae60';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#555';
+            ctx.fillRect(road.x, 0, road.width, canvas.height);
+            
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(road.x - 4, 0, 4, canvas.height);
+            ctx.fillRect(road.x + road.width, 0, 4, canvas.height);
+            
+            ctx.fillStyle = '#fff';
+            const lineHeight = 30;
+            const lineGap = 20;
+            
+            road.lineOffset += gameState.currentSpeed;
+            if (road.lineOffset > lineHeight + lineGap) {
+                road.lineOffset = 0;
+            }
+            
+            for (let y = -lineHeight + road.lineOffset; y < canvas.height; y += lineHeight + lineGap) {
+                ctx.fillRect(road.x + road.width / 2 - 2, y, 4, lineHeight);
+            }
+        }
+
+        function drawCoin(coin) {
+            ctx.fillStyle = '#f1c40f';
+            ctx.beginPath();
+            ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath();
+            ctx.arc(coin.x, coin.y, coin.radius - 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('$', coin.x, coin.y);
+        }
+
+        function drawReward(reward) {
+            if (reward.type === 'star') {
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                    const x = reward.x + Math.cos(angle) * reward.width / 2;
+                    const y = reward.y + Math.sin(angle) * reward.height / 2;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+            } else if (reward.type === 'heart') {
+                ctx.fillStyle = '#e74c3c';
+                ctx.beginPath();
+                ctx.arc(reward.x - 6, reward.y - 3, 8, 0, Math.PI * 2);
+                ctx.arc(reward.x + 6, reward.y - 3, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(reward.x - 12, reward.y);
+                ctx.lineTo(reward.x, reward.y + 12);
+                ctx.lineTo(reward.x + 12, reward.y);
+                ctx.fill();
+            } else if (reward.type === 'boost') {
+                ctx.fillStyle = '#3498db';
+                ctx.beginPath();
+                ctx.moveTo(reward.x - 10, reward.y - 10);
+                ctx.lineTo(reward.x + 10, reward.y);
+                ctx.lineTo(reward.x - 10, reward.y + 10);
+                ctx.lineTo(reward.x - 5, reward.y);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function update(currentTime) {
+            if (!gameState.isPlaying) return;
+            
+            const deltaTime = currentTime - lastFrameTime;
+            
+            if (deltaTime < frameDelay) {
+                gameLoop = requestAnimationFrame(update);
+                return;
+            }
+            
+            lastFrameTime = currentTime;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawRoad();
+            
+            if (player.isMovingLeft && player.x > road.x + 15) {
+                player.x -= player.moveSpeed;
+            }
+            if (player.isMovingRight && player.x < road.x + road.width - player.width - 15) {
+                player.x += player.moveSpeed;
+            }
+            
+            if (player.isAccelerating) {
+                gameState.currentSpeed = Math.min(gameState.currentSpeed + player.acceleration, player.maxSpeed);
+            } else if (player.isReversing) {
+                gameState.currentSpeed = Math.max(gameState.currentSpeed - player.deceleration, player.minSpeed);
+            } else {
+                if (gameState.currentSpeed > gameState.baseSpeed) {
+                    gameState.currentSpeed -= player.deceleration * 0.5;
+                } else if (gameState.currentSpeed < gameState.baseSpeed) {
+                    gameState.currentSpeed += player.acceleration * 0.5;
+                }
+            }
+            
+            if (player.isAccelerating && player.y > 100) {
+                player.y -= 2;
+            } else if (player.isReversing && player.y < canvas.height - player.height - 60) {
+                player.y += 2;
+            } else {
+                const defaultY = canvas.height - player.height - 60;
+                if (player.y < defaultY) {
+                    player.y += 1;
+                } else if (player.y > defaultY) {
+                    player.y -= 1;
+                }
+            }
+            
+            gameState.distance += gameState.currentSpeed * 0.5;
+            
+            const config = levelConfig[gameState.level] || levelConfig[5];
+            
+            gameState.spawnTimer++;
+            if (gameState.spawnTimer > config.spawnRate) {
+                spawnEnemyCar();
+                gameState.spawnTimer = 0;
+            }
+            
+            gameState.coinTimer++;
+            if (gameState.coinTimer > 180) {
+                spawnCoin();
+                gameState.coinTimer = 0;
+            }
+            
+            gameState.rewardTimer++;
+            if (gameState.rewardTimer > 350) {
+                spawnReward();
+                gameState.rewardTimer = 0;
+            }
+            
+            if (gameState.invincible) {
+                gameState.invincibleTimer++;
+                if (gameState.invincibleTimer > 90) {
+                    gameState.invincible = false;
+                    gameState.invincibleTimer = 0;
+                }
+            }
+            
+            enemyCars = enemyCars.filter(car => {
+                car.y += car.speed;
+                drawEnemyCar(car);
+                
+                if (!gameState.invincible && checkCollision(player, car)) {
+                    gameState.lives--;
+                    gameState.invincible = true;
+                    gameState.invincibleTimer = 0;
+                    playSoundEffect(150, 0.3);
+                    updateHUD();
+                    
+                    if (gameState.lives <= 0) {
+                        gameOver();
+                    }
+                    return false;
+                }
+                
+                if (car.y > canvas.height) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            coins = coins.filter(coin => {
+                coin.y += coin.speed;
+                drawCoin(coin);
+                
+                if (!coin.collected && checkCircleCollision(coin, player)) {
+                    coin.collected = true;
+                    gameState.coinsCollected++;
+                    playSoundEffect(800, 0.1);
+                    updateHUD();
+                    return false;
+                }
+                
+                return coin.y < canvas.height;
+            });
+            
+            rewards = rewards.filter(reward => {
+                reward.y += reward.speed;
+                drawReward(reward);
+                
+                if (!reward.collected && checkCollision(player, reward)) {
+                    reward.collected = true;
+                    gameState.rewardsCollected++;
+                    
+                    if (reward.type === 'heart' && gameState.lives < 3) {
+                        gameState.lives++;
+                    }
+                    
+                    playSoundEffect(600, 0.15);
+                    updateHUD();
+                    return false;
+                }
+                
+                return reward.y < canvas.height;
+            });
+            
+            drawPlayerCar(player);
+            
+            if (gameState.distance >= gameState.targetDistance) {
+                levelComplete();
+            }
+            
+            updateHUD();
+            
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function gameOver() {
+            gameState.isPlaying = false;
+            cancelAnimationFrame(gameLoop);
+            document.getElementById('finalCoins').textContent = gameState.coinsCollected;
+            document.getElementById('finalRewards').textContent = gameState.rewardsCollected;
+            document.getElementById('finalLevel').textContent = gameState.level;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+            playSoundEffect(200, 0.5);
+        }
+
+        function levelComplete() {
+            gameState.isPlaying = false;
+            cancelAnimationFrame(gameLoop);
+            const timeElapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            document.getElementById('levelCoins').textContent = gameState.coinsCollected;
+            document.getElementById('levelRewards').textContent = gameState.rewardsCollected;
+            document.getElementById('levelTime').textContent = timeElapsed;
+            document.getElementById('levelCompleteScreen').style.display = 'flex';
+            playSoundEffect(600, 0.3);
+        }
+
+        // Controls
+        window.addEventListener('keydown', (e) => {
+            if (!gameState.isPlaying) return;
+            
+            if (e.key === 'ArrowLeft') {
+                player.isMovingLeft = true;
+                e.preventDefault();
+            }
+            if (e.key === 'ArrowRight') {
+                player.isMovingRight = true;
+                e.preventDefault();
+            }
+            if (e.key === 'ArrowUp') {
+                player.isAccelerating = true;
+                e.preventDefault();
+            }
+            if (e.key === 'ArrowDown') {
+                player.isReversing = true;
+                e.preventDefault();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') player.isMovingLeft = false;
+            if (e.key === 'ArrowRight') player.isMovingRight = false;
+            if (e.key === 'ArrowUp') player.isAccelerating = false;
+            if (e.key === 'ArrowDown') player.isReversing = false;
+        });
+
+        // Touch Controls
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameState.isPlaying) return;
+            e.preventDefault();
+            
+            const rect = canvas.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            const touchY = e.touches[0].clientY - rect.top;
+            
+            if (touchX < canvas.width / 2) {
+                player.isMovingLeft = true;
+            } else {
+                player.isMovingRight = true;
+            }
+            
+            if (touchY < canvas.height / 2) {
+                player.isAccelerating = true;
+            } else {
+                player.isReversing = true;
+            }
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            player.isMovingLeft = false;
+            player.isMovingRight = false;
+            player.isAccelerating = false;
+            player.isReversing = false;
+        });
+
+        // Mouse Controls
+        let isMouseDown = false;
+        
+        canvas.addEventListener('mousedown', (e) => {
+            if (!gameState.isPlaying) return;
+            
+            isMouseDown = true;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            if (mouseX < canvas.width / 2) {
+                player.isMovingLeft = true;
+            } else {
+                player.isMovingRight = true;
+            }
+            
+            if (mouseY < canvas.height / 2) {
+                player.isAccelerating = true;
+            } else {
+                player.isReversing = true;
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isMouseDown = false;
+            player.isMovingLeft = false;
+            player.isMovingRight = false;
+            player.isAccelerating = false;
+            player.isReversing = false;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            if (isMouseDown) {
+                player.isMovingLeft = false;
+                player.isMovingRight = false;
+                player.isAccelerating = false;
+                player.isReversing = false;
+                isMouseDown = false;
+            }
+        });
+
+        updateHUD();
+    </script>
+</body>
+</html>
